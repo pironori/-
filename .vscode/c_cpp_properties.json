@@ -1,0 +1,67 @@
+{
+    "configurations": [
+        {
+            "name": "!!! WARNING !!! AUTO-GENERATED FILE, PLEASE DO NOT MODIFY IT AND USE https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/include",
+                "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/src",
+                "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidTWI2",
+                "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidCrystal",
+                "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/SoftwareSerial",
+                "C:/Users/hiro/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "C:/Users/hiro/.platformio/packages/framework-arduino-avr/variants/standard",
+                "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/lib/ITEADLIB_Arduino_WeeESP8266-master",
+                "C:/Users/hiro/.platformio/lib/TimerOne_ID131",
+                "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "C:/Users/hiro/.platformio/packages/tool-unity",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/include",
+                    "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/src",
+                    "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidTWI2",
+                    "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidCrystal",
+                    "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/SoftwareSerial",
+                    "C:/Users/hiro/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "C:/Users/hiro/.platformio/packages/framework-arduino-avr/variants/standard",
+                    "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/lib/ITEADLIB_Arduino_WeeESP8266-master",
+                    "C:/Users/hiro/.platformio/lib/TimerOne_ID131",
+                    "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "C:/Users/hiro/.platformio/packages/tool-unity",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=50001",
+                "ARDUINO_AVR_UNO",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega328P__",
+                ""
+            ],
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "C:/Users/hiro/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+            "compilerArgs": [
+                "-mmcu=atmega328p",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
