@@ -4,6 +4,9 @@
 //#include <BlynkSimpleStream.h>
 #include <LiquidCrystal.h>
 #include <SPI.h>
+#include <avr/io.h>
+//#include <avr/interrupt.h>
+//#include <MsTimer2.h>
 
 /*int rdata;  //cariculation
 SPISettings MAX6675Setting(4000000,MSBFIRST,SPI_MODE0);
@@ -52,8 +55,11 @@ SoftwareSerial mySerial(0, 1); // RX, TX
 #define LCDd7Pin 7
 // button(D8)
 #define StartButton 8
-// Beep(D9)
-#define TonePin 9
+
+// pwm(D9)
+#define PWM 9
+// Beep(D11)
+#define TonePin 11
 // Tempratier(D10,D12-D13)
 #define TemperatureSlavePin 10
 #define TemperatureMisoPin 12
@@ -64,13 +70,24 @@ SoftwareSerial mySerial(0, 1); // RX, TX
 
 LiquidCrystal lcd(LCDrsPin,LCDenablePin,LCDd4Pin,LCDd5Pin,LCDd6Pin,LCDd7Pin);
 
-#define delayWait 175
+#define delayWait 250 //max_AD_converter transimit time=225ms
 #define oneSec (1000 / delayWait)
+
+#define K_p 0.11
+#define K_i 0.01
+#define PWM_COMPARE_TOP 62499.0 //16Meg/(256[prescaler]*1[Hz])-1=62499
+#define DUTY_SETUP 62498 //duty=100%
+#define TEMP_TH1 50
+#define TEMP_TH2 80
+#define COMP 20
 
 float tempratureRead(void);
 void setTempratureData(void);
 void heatControl(float temperature);
 void lcdDisplay(float temperature);
+
+/*pid_feedbuck*/
+int feedback_cal(float temperature,unsigned int duty_target_value);
 
 byte state;          // main program mode
 byte heatMode;       // UpDown heater mode
@@ -82,7 +99,11 @@ float temperatureMax; // target Temprature
 int blinkTimer;      // blink timer
 boolean blinkFlag;   // blink ON/OFF flag
 float temperature=0.0;
-
+float max_temp=0.0;
+unsigned int duty=DUTY_SETUP;
+unsigned int duty_target_value=DUTY_SETUP;
+float offset=0;
+double per=0.00;
 
 void setup() {
   // degug Initialize(SerialMonitor)
@@ -97,6 +118,7 @@ void setup() {
   // Temprature initialize
   pinMode(TemperatureSlavePin, OUTPUT);
   digitalWrite(TemperatureSlavePin, LOW);
+  delay(1000);
   SPI.begin();
   SPI.setBitOrder(MSBFIRST);
   SPI.setClockDivider(SPI_CLOCK_DIV4);
@@ -104,10 +126,31 @@ void setup() {
   digitalWrite(TemperatureSlavePin,HIGH);
   // memory initialize
   state = 0;
+
+  /*
+  //  timer interrupt initialize
+  MsTimer2::set(500,feedback_cal);  //call per 500ms
+  MsTimer2::start();
+  */
+  //interrupt_stop
+  cli();
+  /*pwm setup*/
+  pinMode(PWM,OUTPUT);
+  /*resistor_initialize*/
+  TCCR1A=0; 
+  TCCR1B=0;
+  TIMSK1=0;
+  /*resisitor_setup*/
+  TCCR1A|=(1<<COM1A1)|(1<<WGM11);
+  TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS12);
+  ICR1=PWM_COMPARE_TOP;
+  OCR1A=DUTY_SETUP;
+  TIMSK1|=(1<<ICIE1);
+  sei();
 }
 
 void loop() {
-  temperature=tempratureRead();
+  temperature=tempratureRead()-COMP;
   switch (state) {
     case 0: // initialize
       lcd.clear();
@@ -150,10 +193,20 @@ void loop() {
       }
       break;
   }
+
+  max_temp=temperature>max_temp?temperature:max_temp;
+
   heatControl(temperature);
   lcdDisplay(temperature);
+  //Serial.println(temperature,DEC);
+
+  /*  max temperature caliculate
+  lcdDisplay(max_temp);
   Serial.print(temperature,DEC);
-  Serial.print("\n");
+  Serial.print("\t");
+  Serial.print(max_temp,DEC);
+  */
+
   delay(delayWait);
 }
 
@@ -219,6 +272,10 @@ void heatControl(float temperature) {
 void lcdDisplay(float temperature) {
   lcd.setCursor(3, 0);
   lcd.print("STATUS:");
+
+  per=duty_target_value/PWM_COMPARE_TOP;
+  per*=100.0;
+
   switch (state) {
     case 0: // initialize
     case 1: // start switch wait
@@ -247,14 +304,25 @@ void lcdDisplay(float temperature) {
       }
       lcd.setCursor(0, 1);
       if ((heatState & 1) == 0) {
-        lcd.print("HEAT1:OFF  ");
+        //lcd.print("HEAT1:OFF  ");
+        lcd.print(" PWM:OFF  ");
       } else {
-        lcd.print("HEAT1:ON   ");
+        //lcd.print("HEAT1:ON   ");
+        lcd.print(" PWM:ON duty=");
+        lcd.print(per,DEC);
+        lcd.setCursor(18,1);
+        lcd.print("%   ");
       }
+      lcd.setCursor(0, 1);
       if ((heatState & 2) == 0) {
-        lcd.print("HEAT2:OFF");
+        //lcd.print("HEAT2:OFF");
+        lcd.print(" PWM:OFF  ");
       } else {
-        lcd.print("HEAT2:ON ");
+        //lcd.print("HEAT2:ON ");
+        lcd.print(" PWM:ON duty=");
+        lcd.print(per,DEC);
+        lcd.setCursor(18,1);
+        lcd.print("%   ");
       }
       lcd.setCursor(5, 3);
       lcd.print("WAIT:");
@@ -285,4 +353,65 @@ void lcdDisplay(float temperature) {
       blinkFlag = false;
     }
   }
+}
+
+/*pi control*/
+int feedback_cal(float temperature,unsigned int duty_target_value){
+float target_error=temperature_control_data[tableCounter][1]-temperature;
+//float target_error=temperatureMax-temperature;
+int temp=0;
+switch (tableCounter){
+case 0:
+  /* code */
+  temp=TEMP_TH1;
+  break;
+case 1:
+case 2:
+case 3:
+  temp=TEMP_TH2;
+  break;
+default:
+  break;
+}
+  /*p control*/
+    if(target_error>0){
+      if(target_error<TEMP_TH1){
+        //duty down
+        duty_target_value-=(PWM_COMPARE_TOP-1)*(K_p*target_error/temperature_control_data[tableCounter][1]);
+        duty_target_value=duty_target_value>=0?duty_target_value:0;
+      }else{
+        duty_target_value=DUTY_SETUP;
+      }
+    }else{
+      //duty=0
+      duty_target_value=0;
+    }
+
+    /*i control*/
+    if(target_error>0){
+      if(target_error<TEMP_TH1){
+        offset+=16000000/(256*(PWM_COMPARE_TOP+1));   //add every timer interrupt
+        duty_target_value-=int((PWM_COMPARE_TOP-1)*(K_i*target_error*offset/temperature_control_data[tableCounter][2]));
+        duty_target_value=duty_target_value>=0?duty_target_value:0;
+      }else{
+        offset=0;
+      }
+    }else{
+      duty_target_value=0;
+    }
+  return duty_target_value;
+}
+
+//loop every 1sec
+ISR(TIMER1_CAPT_vect){
+  /*code_timer interrupt*/
+  duty_target_value=feedback_cal(temperature,duty_target_value);
+  OCR1A=duty_target_value;  //max=62499
+  Serial.print(duty_target_value);
+  Serial.print("\t");
+  Serial.println(OCR1A);
+  /*
+  lcd.setCursor(0,1);
+  lcd.print(OCR1A);
+  */
 }

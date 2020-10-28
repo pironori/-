@@ -8,6 +8,7 @@
             "includePath": [
                 "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/include",
                 "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/src",
+                "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/MsTimer2",
                 "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidTWI2",
                 "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidCrystal",
@@ -28,6 +29,7 @@
                 "path": [
                     "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/include",
                     "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/src",
+                    "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/MsTimer2",
                     "C:/Users/hiro/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidTWI2",
                     "c:/Users/hiro/Documents/PlatformIO/Projects/thermo_test/.pio/libdeps/uno/LiquidCrystal",
