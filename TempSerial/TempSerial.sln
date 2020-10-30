@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempSerial", "TempSerial\TempSerial.csproj", "{B9E495F6-A9C4-4DA9-BBC2-D5C4015CA369}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9E495F6-A9C4-4DA9-BBC2-D5C4015CA369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9E495F6-A9C4-4DA9-BBC2-D5C4015CA369}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9E495F6-A9C4-4DA9-BBC2-D5C4015CA369}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9E495F6-A9C4-4DA9-BBC2-D5C4015CA369}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {64718A5C-3BD8-48D0-A904-DDC9BE847E14}
+	EndGlobalSection
+EndGlobal
