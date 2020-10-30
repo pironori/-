@@ -74,7 +74,9 @@ LiquidCrystal lcd(LCDrsPin,LCDenablePin,LCDd4Pin,LCDd5Pin,LCDd6Pin,LCDd7Pin);
 #define oneSec (1000 / delayWait)
 
 #define K_p 0.11
-#define K_i 0.01
+#define K_i 0.05
+#define K_d1 0.11
+#define K_d2 25.0
 #define PWM_COMPARE_TOP 62499.0 //16Meg/(256[prescaler]*1[Hz])-1=62499
 #define DUTY_SETUP 62498 //duty=100%
 #define TEMP_TH1 50
@@ -104,6 +106,8 @@ unsigned int duty=DUTY_SETUP;
 unsigned int duty_target_value=DUTY_SETUP;
 float offset=0;
 double per=0.00;
+float pretemperature=0.0;
+uint8_t count=0;
 
 void setup() {
   // degug Initialize(SerialMonitor)
@@ -305,7 +309,7 @@ void lcdDisplay(float temperature) {
       lcd.setCursor(0, 1);
       if ((heatState & 1) == 0) {
         //lcd.print("HEAT1:OFF  ");
-        lcd.print(" PWM:OFF  ");
+        lcd.print(" PWM:OFF           ");
       } else {
         //lcd.print("HEAT1:ON   ");
         lcd.print(" PWM:ON duty=");
@@ -316,7 +320,7 @@ void lcdDisplay(float temperature) {
       lcd.setCursor(0, 1);
       if ((heatState & 2) == 0) {
         //lcd.print("HEAT2:OFF");
-        lcd.print(" PWM:OFF  ");
+        lcd.print(" PWM:OFF           ");
       } else {
         //lcd.print("HEAT2:ON ");
         lcd.print(" PWM:ON duty=");
@@ -357,28 +361,18 @@ void lcdDisplay(float temperature) {
 
 /*pi control*/
 int feedback_cal(float temperature,unsigned int duty_target_value){
-float target_error=temperature_control_data[tableCounter][1]-temperature;
-//float target_error=temperatureMax-temperature;
-int temp=0;
-switch (tableCounter){
-case 0:
-  /* code */
-  temp=TEMP_TH1;
-  break;
-case 1:
-case 2:
-case 3:
-  temp=TEMP_TH2;
-  break;
-default:
-  break;
-}
-  /*p control*/
+//float target_error=temperature_control_data[tableCounter][1]-temperature;
+float target_error=temperatureMax-temperature;
+
+  /*propotional control*/
     if(target_error>0){
       if(target_error<TEMP_TH1){
         //duty down
+        duty_target_value=duty_target_value>(PWM_COMPARE_TOP-1)*(K_p*target_error/temperatureMax)?(unsigned int)duty_target_value-(PWM_COMPARE_TOP-1)*(K_p*target_error/temperatureMax):0;
+        /*
         duty_target_value-=(PWM_COMPARE_TOP-1)*(K_p*target_error/temperature_control_data[tableCounter][1]);
         duty_target_value=duty_target_value>=0?duty_target_value:0;
+        */
       }else{
         duty_target_value=DUTY_SETUP;
       }
@@ -387,18 +381,42 @@ default:
       duty_target_value=0;
     }
 
-    /*i control*/
+    /*integtal control*/
+    
     if(target_error>0){
       if(target_error<TEMP_TH1){
         offset+=16000000/(256*(PWM_COMPARE_TOP+1));   //add every timer interrupt
-        duty_target_value-=int((PWM_COMPARE_TOP-1)*(K_i*target_error*offset/temperature_control_data[tableCounter][2]));
-        duty_target_value=duty_target_value>=0?duty_target_value:0;
+        duty_target_value=duty_target_value>(PWM_COMPARE_TOP-1)*(K_i*target_error*offset/temperatureMax)?duty_target_value-(unsigned int)(PWM_COMPARE_TOP-1)*(K_i*target_error*offset/temperatureMax):0;
+        //duty_target_value-=(PWM_COMPARE_TOP-1)*(K_i*target_error*offset/temperature_control_data[tableCounter][2]);
+        //duty_target_value=duty_target_value>=0?duty_target_value:0;
       }else{
         offset=0;
       }
     }else{
       duty_target_value=0;
+      offset=0;
     }
+    
+
+    /*derivative control*/
+    
+    if(target_error>0){
+      if(temperature>=pretemperature){
+        if(target_error<TEMP_TH1){
+          duty_target_value=duty_target_value>(PWM_COMPARE_TOP-1)*(K_d1*((temperature-pretemperature)/(16000000/(256*(PWM_COMPARE_TOP+1))))/temperatureMax)?duty_target_value-(unsigned int)(PWM_COMPARE_TOP-1)*(K_d1*((temperature-pretemperature)/(16000000/(256*(PWM_COMPARE_TOP+1))))/temperatureMax):0;
+        }
+      }else{
+        duty_target_value=duty_target_value+(unsigned int)(PWM_COMPARE_TOP-1)*(K_d2*((pretemperature-temperature)/(16000000/(256*(PWM_COMPARE_TOP+1))))/temperatureMax)>=PWM_COMPARE_TOP?PWM_COMPARE_TOP:duty_target_value+(unsigned int)(PWM_COMPARE_TOP-1)*(K_d2*((pretemperature-temperature)/(16000000/(256*(PWM_COMPARE_TOP+1))))/temperatureMax);
+      }
+    }else{
+      duty_target_value=0;
+    }
+  count++;
+  if(count==2){
+    pretemperature=temperature; //renew pretemperature
+    count=0;
+  }
+
   return duty_target_value;
 }
 
